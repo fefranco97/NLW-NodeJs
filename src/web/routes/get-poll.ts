@@ -4,17 +4,15 @@ import { FastifyInstance } from 'fastify'
 import { redis } from '../../lib/redis'
 
 export async function getPollById(app: FastifyInstance) {
-  app.get('/polls/:pollid', async (request, reply) => {
-    console.log(request.params)
-
+  app.get('/polls/:pollId', async (request, reply) => {
     const getPollParams = z.object({
-      pollid: z.string().uuid(),
+      pollId: z.string().uuid(),
     })
-    const { pollid } = getPollParams.parse(request.params)
+    const { pollId } = getPollParams.parse(request.params)
 
     const poll = await prisma.poll.findUnique({
       where: {
-        id: pollid,
+        id: pollId,
       },
       include: {
         options: {
@@ -29,7 +27,7 @@ export async function getPollById(app: FastifyInstance) {
     if (!poll) {
       return reply.status(404).send({ message: 'Poll not found' })
     }
-    const result = await redis.zrange(pollid, 0, -1, 'WITHSCORES')
+    const result = await redis.zrange(pollId, 0, -1, 'WITHSCORES')
 
     const votes = result.reduce(
       (object, line, index) => {
